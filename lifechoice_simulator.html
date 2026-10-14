@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifeChoice - Text Life Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        purpleTheme: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            400: '#a78bfa',
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                            800: '#5b21b6',
+                            900: '#3b0764',
+                            950: '#1a0b2e',
+                        },
+                        emeraldTheme: {
+                            400: '#34d399',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+        
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background: #0f071a;
+            color: #f8fafc;
+            min-height: 100vh;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #10b981; border-radius: 4px; }
+
+        .glass-card {
+            background: #1c0d33;
+            border: 1px solid rgba(167, 139, 250, 0.12);
+        }
+
+        .glow-green {
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-0 sm:p-4 select-none">
+
+    <!-- Mobile Frame -->
+    <div id="game-container" class="w-full sm:max-w-md h-screen sm:h-[94vh] bg-[#140826] sm:rounded-3xl border-0 sm:border-8 sm:border-slate-900 shadow-2xl flex flex-col overflow-hidden relative">
+
+        <!-- Toast / Achievement Pop-Up Banner -->
+        <div id="achievement-toast" class="absolute top-4 left-4 right-4 bg-gradient-to-r from-emerald-500 to-purple-700 text-slate-950 p-3 rounded-2xl shadow-2xl z-50 transform -translate-y-20 opacity-0 transition-all duration-500 flex items-center gap-3 border border-emerald-300/40">
+            <div class="text-3xl shrink-0" id="toast-icon">🏆</div>
+            <div>
+                <div class="text-[9px] uppercase tracking-widest font-black text-purple-950">Achievement Unlocked!</div>
+                <div class="text-xs font-black text-slate-950" id="toast-title">First Words</div>
+                <div class="text-[10px] font-semibold text-slate-900 leading-tight" id="toast-desc">You uttered your very first baby word.</div>
+            </div>
+        </div>
+
+        <!-- Start Game / Birth Creation Screen -->
+        <div id="start-modal" class="absolute inset-0 bg-[#0f071a] z-50 flex flex-col items-center justify-between p-6 text-center overflow-y-auto">
+            <div class="my-auto w-full max-w-xs space-y-4">
+                
+                <!-- Custom LifeChoice Globe & Skyscraper SVG Logo -->
+                <div class="w-48 h-36 mx-auto flex items-center justify-center">
+                    <svg viewBox="0 0 300 240" class="w-full h-full">
+                        <defs>
+                            <linearGradient id="globeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#2563eb"/>
+                                <stop offset="100%" stop-color="#0f172a"/>
+                            </linearGradient>
+                            <linearGradient id="landGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#22c55e"/>
+                                <stop offset="100%" stop-color="#15803d"/>
+                            </linearGradient>
+                        </defs>
+                        <circle cx="150" cy="130" r="75" fill="url(#globeGrad)"/>
+                        <path d="M 100,100 L 120,85 L 145,95 L 140,125 L 115,140 Z" fill="url(#landGrad)" />
+                        <path d="M 155,135 L 185,120 L 210,140 L 195,175 Z" fill="url(#landGrad)" />
+                        <polygon points="175,110 195,20 215,25 195,115" fill="#facc15" />
+                        <rect x="50" y="125" width="200" height="42" rx="10" fill="#2e1065" stroke="#10b981" stroke-width="3"/>
+                        <text x="150" y="154" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="25" fill="#ffffff" text-anchor="middle">LifeChoice</text>
+                    </svg>
+                </div>
+
+                <div class="space-y-1">
+                    <p class="text-xs text-emerald-400 font-bold uppercase tracking-widest">New Born Setup</p>
+                    <p class="text-[11px] text-slate-400">You will be born as a newborn baby (Age 0).</p>
+                </div>
+
+                <div class="space-y-3 text-left bg-purple-950/60 p-4 rounded-2xl border border-purple-800/40">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-300 uppercase block mb-1">First Name</label>
+                        <input type="text" id="input-first-name" class="w-full bg-slate-900 border border-purple-700/50 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" value="Alex">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-300 uppercase block mb-1">Last Name</label>
+                        <input type="text" id="input-last-name" class="w-full bg-slate-900 border border-purple-700/50 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" value="Vance">
+                    </div>
+
+                    <!-- Strictly Male / Female Choice -->
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-300 uppercase block mb-1">Biological Gender</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button type="button" onclick="selectGender('Male')" id="gender-male" class="py-2 px-3 rounded-xl border-2 border-emerald-500 bg-emerald-500/20 text-emerald-300 font-extrabold text-xs flex items-center justify-center gap-1">
+                                <span>♂</span> Male
+                            </button>
+                            <button type="button" onclick="selectGender('Female')" id="gender-female" class="py-2 px-3 rounded-xl border-2 border-purple-700/50 bg-slate-900 text-slate-400 font-extrabold text-xs flex items-center justify-center gap-1">
+                                <span>♀</span> Female
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-300 uppercase block mb-1">Country of Birth</label>
+                        <select id="input-country" class="w-full bg-slate-900 border border-purple-700/50 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
+                            <option value="United States">🇺🇸 United States</option>
+                            <option value="United Kingdom">🇬🇧 United Kingdom</option>
+                            <option value="Canada">🇨🇦 Canada</option>
+                            <option value="Australia">🇦🇺 Australia</option>
+                            <option value="Germany">🇩🇪 Germany</option>
+                            <option value="Japan">🇯🇵 Japan</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button onclick="startNewLife()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black py-3.5 rounded-2xl glow-green transition transform active:scale-95 text-xs uppercase tracking-wider">
+                    Birth Character 🍼
+                </button>
+            </div>
+        </div>
+
+        <!-- Interactive Event Modal -->
+        <div id="event-modal" class="absolute inset-0 bg-slate-950/85 backdrop-blur-md z-40 hidden flex items-center justify-center p-4">
+            <div class="glass-card rounded-3xl p-6 max-w-xs w-full text-center shadow-2xl space-y-4 border-purple-500/30">
+                <div id="event-icon-box" class="w-16 h-16 rounded-2xl bg-purple-900/50 text-emerald-400 border border-emerald-500/30 flex items-center justify-center text-3xl mx-auto">
+                    ❓
+                </div>
+                <div>
+                    <h3 id="event-title" class="text-base font-extrabold text-white">Life Decision</h3>
+                    <p id="event-desc" class="text-xs text-slate-300 mt-1.5 leading-relaxed">Details...</p>
+                </div>
+                <div id="event-choices" class="space-y-2 pt-2"></div>
+            </div>
+        </div>
+
+        <!-- Death & Gravestone Modal -->
+        <div id="death-modal" class="absolute inset-0 bg-[#0c0517]/95 z-50 hidden flex flex-col items-center justify-center p-6 text-center text-white overflow-y-auto">
+            <div class="w-full max-w-xs space-y-5 my-auto">
+                <div class="text-6xl">🪦</div>
+                <div>
+                    <h2 class="text-xl font-black text-purple-300 uppercase tracking-wider">In Loving Memory</h2>
+                    <p id="death-name" class="text-lg font-black text-emerald-400 mt-1">Alex Vance</p>
+                    <p id="death-span" class="text-xs text-slate-400">2026 - 2106 (Age 80)</p>
+                </div>
+
+                <div class="glass-card p-4 rounded-2xl space-y-3 border-purple-500/30">
+                    <div class="text-[10px] font-extrabold text-slate-400 uppercase">Earned Ribbon</div>
+                    <div id="death-ribbon" class="inline-block bg-emerald-500 text-slate-950 font-black text-xs px-4 py-1.5 rounded-full">
+                        🌟 Centenarian
+                    </div>
+                    <p id="death-summary" class="text-xs text-slate-300 leading-relaxed pt-1">
+                        Passed away peacefully after living a life shaped by choices.
+                    </p>
+                </div>
+
+                <button onclick="location.reload()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black py-3.5 rounded-2xl glow-green transition text-xs uppercase">
+                    Start Another Life 🔄
+                </button>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <header class="bg-[#180a2b] border-b border-purple-800/40 p-3 shrink-0 z-10">
+            <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                    <div class="w-9 h-9 shrink-0">
+                        <svg viewBox="0 0 300 240" class="w-full h-full">
+                            <circle cx="150" cy="130" r="75" fill="#2563eb" />
+                            <path d="M 100,100 L 120,85 L 145,95 L 140,125 L 115,140 Z" fill="#22c55e" />
+                            <rect x="50" y="125" width="200" height="45" rx="10" fill="#2e1065" stroke="#10b981" stroke-width="4"/>
+                            <text x="150" y="156" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="28" fill="#ffffff" text-anchor="middle">LC</text>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-base font-black text-white leading-none">LifeChoice</h1>
+                        <p id="header-stage" class="text-[9px] font-bold text-emerald-400 uppercase tracking-widest mt-0.5">Infancy</p>
+                    </div>
+                </div>
+
+                <div class="text-right">
+                    <div id="header-wealth" class="text-sm font-black text-emerald-400">$0</div>
+                    <div class="text-[9px] font-bold text-slate-400 uppercase">Bank Balance</div>
+                </div>
+            </div>
+
+            <div class="mt-2.5 flex items-center justify-between bg-purple-950/60 p-2 rounded-2xl border border-purple-800/30">
+                <div class="flex items-center gap-2">
+                    <div id="main-avatar" class="w-9 h-9 rounded-xl bg-purple-800/60 border border-purple-500/40 flex items-center justify-center text-xl shrink-0">👶</div>
+                    <div>
+                        <div id="header-name" class="font-extrabold text-xs text-white">Alex Vance</div>
+                        <div class="text-[10px] font-semibold text-slate-400 flex items-center gap-1">
+                            <span id="header-gender-icon" class="text-emerald-400">♂</span>
+                            <span id="header-age" class="text-white font-bold">Age 0</span>
+                            <span>•</span>
+                            <span id="header-country">United States</span>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="toggleAchievementsModal()" class="bg-purple-900/60 border border-purple-600/40 hover:border-emerald-400 text-emerald-300 p-2 rounded-xl text-xs font-bold flex items-center gap-1">
+                    🏆 <span class="hidden sm:inline">Badges</span>
+                </button>
+            </div>
+
+            <!-- Core Meters -->
+            <div class="grid grid-cols-4 gap-1.5 mt-2">
+                <div class="bg-purple-950/40 border border-purple-800/30 rounded-xl p-1 text-center">
+                    <div class="text-[9px] text-slate-300">😃 Happy</div>
+                    <div class="text-xs font-black text-emerald-400" id="val-happiness">85%</div>
+                    <div class="w-full bg-slate-800 h-1 rounded-full overflow-hidden mt-0.5"><div id="bar-happiness" class="bg-emerald-400 h-full w-[85%]"></div></div>
+                </div>
+                <div class="bg-purple-950/40 border border-purple-800/30 rounded-xl p-1 text-center">
+                    <div class="text-[9px] text-slate-300">🩺 Health</div>
+                    <div class="text-xs font-black text-emerald-400" id="val-health">95%</div>
+                    <div class="w-full bg-slate-800 h-1 rounded-full overflow-hidden mt-0.5"><div id="bar-health" class="bg-emerald-400 h-full w-[95%]"></div></div>
+                </div>
+                <div class="bg-purple-950/40 border border-purple-800/30 rounded-xl p-1 text-center">
+                    <div class="text-[9px] text-slate-300">🧠 Smarts</div>
+                    <div class="text-xs font-black text-purple-300" id="val-smarts">50%</div>
+                    <div class="w-full bg-slate-800 h-1 rounded-full overflow-hidden mt-0.5"><div id="bar-smarts" class="bg-purple-400 h-full w-[50%]"></div></div>
+                </div>
+                <div class="bg-purple-950/40 border border-purple-800/30 rounded-xl p-1 text-center">
+                    <div class="text-[9px] text-slate-300">✨ Looks</div>
+                    <div class="text-xs font-black text-purple-300" id="val-looks">60%</div>
+                    <div class="w-full bg-slate-800 h-1 rounded-full overflow-hidden mt-0.5"><div id="bar-looks" class="bg-purple-400 h-full w-[60%]"></div></div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <main id="main-content" class="flex-1 overflow-y-auto custom-scrollbar p-3.5 space-y-3">
+            <!-- Dynamic Content -->
+        </main>
+
+        <!-- Achievements Modal -->
+        <div id="achievements-modal" class="absolute inset-0 bg-slate-950/90 backdrop-blur-md z-40 hidden flex flex-col p-4">
+            <div class="flex items-center justify-between border-b border-purple-800/50 pb-3 mb-3">
+                <h3 class="text-sm font-black text-emerald-400 flex items-center gap-2">🏆 Lifetime Achievements</h3>
+                <button onclick="toggleAchievementsModal()" class="text-slate-400 font-bold hover:text-white text-sm">✕ Close</button>
+            </div>
+            <div id="achievements-list" class="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-1"></div>
+        </div>
+
+        <!-- Footer Nav & Age Up -->
+        <footer class="bg-[#180a2b] border-t border-purple-800/40 p-2.5 shrink-0 flex items-center justify-between gap-2">
+            <div class="flex items-center justify-around flex-1 bg-purple-950/80 p-1 rounded-2xl border border-purple-800/40">
+                <button onclick="switchTab('log')" id="nav-log" class="flex-1 py-1.5 text-[9px] font-extrabold rounded-xl text-slate-950 bg-emerald-400">Journal</button>
+                <button onclick="switchTab('family')" id="nav-family" class="flex-1 py-1.5 text-[9px] font-bold rounded-xl text-slate-400">Family</button>
+                <button onclick="switchTab('schooljob')" id="nav-schooljob" class="flex-1 py-1.5 text-[9px] font-bold rounded-xl text-slate-400">Occupation</button>
+                <button onclick="switchTab('activities')" id="nav-activities" class="flex-1 py-1.5 text-[9px] font-bold rounded-xl text-slate-400">Activities</button>
+                <button onclick="switchTab('assets')" id="nav-assets" class="flex-1 py-1.5 text-[9px] font-bold rounded-xl text-slate-400">Assets</button>
+            </div>
+
+            <button onclick="ageUp()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black px-3.5 py-1.5 rounded-2xl glow-green flex flex-col items-center justify-center transition active:scale-95 shrink-0">
+                <span class="text-[8px] uppercase font-bold">Age Up</span>
+                <span class="text-xs font-black leading-tight">+1 Year 🎂</span>
+            </button>
+        </footer>
+
+    </div>
+
+    <!-- Engine JS -->
+    <script>
+        let player = {
+            firstName: "Alex",
+            lastName: "Vance",
+            gender: "Male",
+            age: 0,
+            country: "United States",
+            stage: "Infancy",
+            happiness: 85,
+            health: 95,
+            smarts: 50,
+            looks: 60,
+            wealth: 0,
+            jobTitle: "Unemployed",
+            salary: 0,
+            education: "None",
+            hasDriverLicense: false,
+            parents: [],
+            classmates: [],
+            teachers: [],
+            partner: null,
+            assets: [],
+            logs: [],
+            currentTab: "log",
+            unlockedAchievements: []
+        };
+
+        const ACHIEVEMENTS_DEF = [
+            { id: 'first_words', name: 'First Words 👶', desc: 'Spoke your very first words as a baby.' },
+            { id: 'elem_grad', name: 'Elementary Graduate 🎒', desc: 'Graduated from elementary school.' },
+            { id: 'high_grad', name: 'High School Graduate 🎓', desc: 'Earned your high school diploma.' },
+            { id: 'first_kiss', name: 'First Romance 💋', desc: 'Started dating your first partner.' },
+            { id: 'driver_lic', name: 'Road Ready 🚗', desc: 'Passed your driving exam.' },
+            { id: 'first_job', name: 'Breadwinner 💼', desc: 'Landed your first full-time career job.' },
+            { id: 'vacationer', name: 'Globe Trotter ✈️', desc: 'Went on an international holiday.' },
+            { id: 'millionaire', name: 'Millionaire 💰', desc: 'Reached a net worth of $1,000,000.' },
+            { id: 'centenarian', name: 'Centenarian 💯', desc: 'Reached age 100.' }
+        ];
+
+        function selectGender(g) {
+            player.gender = g;
+            document.getElementById('gender-male').className = g === 'Male' ? 
+                "py-2 px-3 rounded-xl border-2 border-emerald-500 bg-emerald-500/20 text-emerald-300 font-extrabold text-xs flex items-center justify-center gap-1" :
+                "py-2 px-3 rounded-xl border-2 border-purple-700/50 bg-slate-900 text-slate-400 font-extrabold text-xs flex items-center justify-center gap-1";
+            
+            document.getElementById('gender-female').className = g === 'Female' ? 
+                "py-2 px-3 rounded-xl border-2 border-emerald-500 bg-emerald-500/20 text-emerald-300 font-extrabold text-xs flex items-center justify-center gap-1" :
+                "py-2 px-3 rounded-xl border-2 border-purple-700/50 bg-slate-900 text-slate-400 font-extrabold text-xs flex items-center justify-center gap-1";
+        }
+
+        function startNewLife() {
+            player.firstName = document.getElementById('input-first-name').value.trim() || "Alex";
+            player.lastName = document.getElementById('input-last-name').value.trim() || "Vance";
+            player.country = document.getElementById('input-country').value;
+            player.age = 0; // Strictly starts at age 0
+            player.wealth = 0;
+            player.happiness = Math.floor(Math.random() * 20) + 80;
+            player.health = Math.floor(Math.random() * 20) + 80;
+            player.smarts = Math.floor(Math.random() * 40) + 35;
+            player.looks = Math.floor(Math.random() * 40) + 35;
+            player.logs = [];
+            player.unlockedAchievements = [];
+
+            // Generate Parents
+            player.parents = [
+                { role: "Mother", name: `Sarah ${player.lastName}`, age: 26, relationship: 80, generosity: Math.floor(Math.random()*40)+60 },
+                { role: "Father", name: `David ${player.lastName}`, age: 28, relationship: 80, generosity: Math.floor(Math.random()*40)+50 }
+            ];
+
+            document.getElementById('start-modal').classList.add('hidden');
+            logLifeEvent(`You were born as a baby ${player.gender.toLowerCase()} named ${player.firstName} ${player.lastName} in ${player.country}.`);
+            logLifeEvent(`Your mother is ${player.parents[0].name} (Age 26) and father is ${player.parents[1].name} (Age 28).`);
+            render();
+        }
+
+        function unlockAchievement(id) {
+            if (player.unlockedAchievements.includes(id)) return;
+            player.unlockedAchievements.push(id);
+            const ach = ACHIEVEMENTS_DEF.find(a => a.id === id);
+            if (!ach) return;
+
+            document.getElementById('toast-title').innerText = ach.name;
+            document.getElementById('toast-desc').innerText = ach.desc;
+            const toast = document.getElementById('achievement-toast');
+            toast.classList.remove('-translate-y-20', 'opacity-0');
+            
+            setTimeout(() => {
+                toast.classList.add('-translate-y-20', 'opacity-0');
+            }, 3500);
+        }
+
+        function logLifeEvent(text) {
+            player.logs.unshift({ age: player.age, text });
+            if (player.logs.length > 50) player.logs.pop();
+        }
+
+        function updateStage() {
+            if (player.age <= 3) player.stage = "Infancy";
+            else if (player.age <= 5) player.stage = "Early Childhood";
+            else if (player.age <= 11) player.stage = "Elementary School";
+            else if (player.age <= 13) player.stage = "Middle School";
+            else if (player.age <= 17) player.stage = "High School";
+            else if (player.age <= 64) player.stage = "Adulthood";
+            else player.stage = "Senior";
+        }
+
+        function getAvatar() {
+            const g = player.gender;
+            if (player.age <= 3) return "👶";
+            if (player.age <= 11) return g === 'Male' ? "👦" : "👧";
+            if (player.age <= 17) return g === 'Male' ? "🧑" : "👧";
+            if (player.age <= 64) return g === 'Male' ? "👨" : "👩";
+            return g === 'Male' ? "👴" : "👵";
+        }
+
+        function updateHeaderUI() {
+            updateStage();
+            document.getElementById('header-name').innerText = `${player.firstName} ${player.lastName}`;
+            document.getElementById('header-age').innerText = `Age ${player.age}`;
+            document.getElementById('header-stage').innerText = player.stage;
+            document.getElementById('header-country').innerText = player.country;
+            document.getElementById('header-gender-icon').innerText = player.gender === 'Male' ? '♂' : '♀';
+            document.getElementById('header-wealth').innerText = `$${player.wealth.toLocaleString()}`;
+            document.getElementById('main-avatar').innerText = getAvatar();
+
+            document.getElementById('val-happiness').innerText = `${player.happiness}%`;
+            document.getElementById('bar-happiness').style.width = `${player.happiness}%`;
+
+            document.getElementById('val-health').innerText = `${player.health}%`;
+            document.getElementById('bar-health').style.width = `${player.health}%`;
+
+            document.getElementById('val-smarts').innerText = `${player.smarts}%`;
+            document.getElementById('bar-smarts').style.width = `${player.smarts}%`;
+
+            document.getElementById('val-looks').innerText = `${player.looks}%`;
+            document.getElementById('bar-looks').style.width = `${player.looks}%`;
+        }
+
+        function switchTab(t) {
+            player.currentTab = t;
+            ['log', 'family', 'schooljob', 'activities', 'assets'].forEach(tab => {
+                const btn = document.getElementById(`nav-${tab}`);
+                if (tab === t) {
+                    btn.className = "flex-1 py-1.5 text-[9px] font-extrabold rounded-xl text-slate-950 bg-emerald-400";
+                } else {
+                    btn.className = "flex-1 py-1.5 text-[9px] font-bold rounded-xl text-slate-400 hover:text-white";
+                }
+            });
+            renderContent();
+        }
+
+        function toggleAchievementsModal() {
+            const m = document.getElementById('achievements-modal');
+            if (m.classList.contains('hidden')) {
+                renderAchievementsList();
+                m.classList.remove('hidden');
+            } else {
+                m.classList.add('hidden');
+            }
+        }
+
+        function renderAchievementsList() {
+            const box = document.getElementById('achievements-list');
+            box.innerHTML = '';
+            ACHIEVEMENTS_DEF.forEach(a => {
+                const isUnlocked = player.unlockedAchievements.includes(a.id);
+                box.innerHTML += `
+                    <div class="p-2.5 rounded-xl border ${isUnlocked ? 'bg-purple-900/40 border-emerald-500/50' : 'bg-slate-900/60 border-slate-800 opacity-60'} flex items-center justify-between">
+                        <div>
+                            <div class="text-xs font-bold text-white">${a.name}</div>
+                            <div class="text-[10px] text-slate-400">${a.desc}</div>
+                        </div>
+                        <span class="text-xs">${isUnlocked ? '✅' : '🔒'}</span>
+                    </div>
+                `;
+            });
+        }
+
+        function renderContent() {
+            const container = document.getElementById('main-content');
+            let html = '';
+
+            if (player.currentTab === 'log') {
+                html += `
+                    <div class="space-y-3">
+                        <div class="glass-card p-3 rounded-2xl space-y-1.5">
+                            <div class="text-[10px] font-extrabold text-emerald-400 uppercase">Personal Overview</div>
+                            <div class="grid grid-cols-2 gap-2 text-xs">
+                                <div class="bg-purple-950/40 p-2 rounded-xl border border-purple-800/20">
+                                    <span class="text-slate-400 block text-[9px]">Occupation</span>
+                                    <span class="font-bold text-white">${player.jobTitle}</span>
+                                </div>
+                                <div class="bg-purple-950/40 p-2 rounded-xl border border-purple-800/20">
+                                    <span class="text-slate-400 block text-[9px]">Education Status</span>
+                                    <span class="font-bold text-white">${player.education}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="glass-card p-3 rounded-2xl space-y-2">
+                            <div class="text-[10px] font-extrabold text-emerald-400 uppercase">Life Journal</div>
+                            <div class="space-y-1.5 max-h-64 overflow-y-auto custom-scrollbar">
+                `;
+                player.logs.forEach(l => {
+                    html += `
+                        <div class="bg-purple-950/40 border border-purple-800/30 p-2 rounded-xl text-xs flex gap-2 items-start">
+                            <span class="bg-emerald-500/20 text-emerald-300 font-black px-1.5 py-0.5 rounded text-[9px] shrink-0">Age ${l.age}</span>
+                            <p class="text-slate-200">${l.text}</p>
+                        </div>
+                    `;
+                });
+                html += `</div></div></div>`;
+            } 
+            else if (player.currentTab === 'family') {
+                html += `<div class="space-y-3"><h3 class="text-[10px] font-extrabold text-emerald-400 uppercase">Parents & Family</h3>`;
+                
+                player.parents.forEach((p, idx) => {
+                    html += `
+                        <div class="glass-card p-3 rounded-2xl space-y-2">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <div class="text-xs font-bold text-white">${p.role}: ${p.name}</div>
+                                    <div class="text-[10px] text-slate-400">Age ${p.age} • Relationship: ${p.relationship}%</div>
+                                </div>
+                                <span class="text-lg">${p.role === 'Mother' ? '👩' : '👨'}</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-1.5 pt-1">
+                                <button onclick="interactFamily(${idx}, 'time')" class="bg-purple-900/60 hover:bg-emerald-500/20 border border-purple-700/50 p-1.5 rounded-xl text-[10px] font-bold text-white">Spend Time ⌛</button>
+                                <button onclick="interactFamily(${idx}, 'compliment')" class="bg-purple-900/60 hover:bg-emerald-500/20 border border-purple-700/50 p-1.5 rounded-xl text-[10px] font-bold text-white">Compliment 💬</button>
+                                ${player.age >= 5 ? `<button onclick="interactFamily(${idx}, 'money')" class="bg-purple-900/60 hover:bg-emerald-500/20 border border-purple-700/50 p-1.5 rounded-xl text-[10px] font-bold text-white">Ask for Money 💵</button>` : ''}
+                                <button onclick="interactFamily(${idx}, 'insult')" class="bg-purple-900/60 hover:bg-red-500/20 border border-purple-700/50 p-1.5 rounded-xl text-[10px] font-bold text-red-300">Insult 😤</button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                if (player.partner) {
+                    html += `
+                        <div class="glass-card p-3 rounded-2xl space-y-2 border-emerald-500/30">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <div class="text-xs font-bold text-emerald-300">❤️ Partner: ${player.partner.name}</div>
+                                    <div class="text-[10px] text-slate-400">Relationship: ${player.partner.relationship}%</div>
+                                </div>
+                                <span class="text-lg">${player.partner.gender === 'Female' ? '👩' : '👨'}</span>
+                            </div>
+                            <button onclick="datePartner()" class="w-full bg-emerald-500 text-slate-950 font-black py-2 rounded-xl text-xs">Spend Romantic Time 💕</button>
+                        </div>
+                    `;
+                }
+
+                html += `</div>`;
+            }
+            else if (player.currentTab === 'schooljob') {
+                html += `<div class="space-y-3"><h3 class="text-[10px] font-extrabold text-emerald-400 uppercase">School & Career</h3>`;
+
+                if (player.age <= 5) {
+                    html += `<div class="glass-card p-6 rounded-2xl text-center text-slate-400 text-xs">You are too young for school or work! Stay at home with your parents. 👶</div>`;
+                } 
+                else if (player.age >= 6 && player.age <= 17) {
+                    html += `
+                        <div class="glass-card p-3.5 rounded-2xl space-y-2">
+                            <div class="text-xs font-bold text-white">${player.education} Enrolled</div>
+                            <div class="text-[10px] text-slate-400">Attending local school classes</div>
+                            <div class="grid grid-cols-2 gap-2 pt-1">
+                                <button onclick="studyHarder()" class="bg-emerald-500 text-slate-950 font-extrabold py-2 rounded-xl text-xs">Study Harder 📚</button>
+                                <button onclick="interactClassmates()" class="bg-purple-900/60 border border-purple-700/50 font-bold py-2 rounded-xl text-xs text-white">Classmates 🎒</button>
+                            </div>
+                        </div>
+                    `;
+
+                    if (player.age >= 12 && player.age <= 13) {
+                        html += `
+                            <div class="glass-card p-3 rounded-2xl space-y-2">
+                                <div class="text-[10px] font-bold text-slate-400 uppercase">Freelance Gigs (Age 12+)</div>
+                                <div onclick="applyJob('Babysitter 🍼', 2000)" class="flex justify-between p-2 bg-purple-950/40 border border-purple-800/30 rounded-xl cursor-pointer text-xs">
+                                    <span>🍼 Babysitting</span><span class="text-emerald-400 font-bold">$2,000/yr</span>
+                                </div>
+                                <div onclick="applyJob('Dog Walker 🐕', 2500)" class="flex justify-between p-2 bg-purple-950/40 border border-purple-800/30 rounded-xl cursor-pointer text-xs">
+                                    <span>🐕 Dog Walking</span><span class="text-emerald-400 font-bold">$2,500/yr</span>
+                                </div>
+                            </div>
+                        `;
+                    } else if (player.age >= 14) {
+                        html += `
+                            <div class="glass-card p-3 rounded-2xl space-y-2">
+                                <div class="text-[10px] font-bold text-slate-400 uppercase">Part-Time Jobs (Age 14+)</div>
+                                <div onclick="applyJob('Fast Food Crew 🍔', 12000)" class="flex justify-between p-2 bg-purple-950/40 border border-purple-800/30 rounded-xl cursor-pointer text-xs">
+                                    <span>🍔 Fast Food Worker</span><span class="text-emerald-400 font-bold">$12,000/yr</span>
+                                </div>
+                                <div onclick="applyJob('Supermarket Cashier 🛒', 14000)" class="flex justify-between p-2 bg-purple-950/40 border border-purple-800/30 rounded-xl cursor-pointer text-xs">
+                                    <span>🛒 Supermarket Cashier</span><span class="text-emerald-400 font-bold">$14,000/yr</span>
+                                </div>
+                            </div>
+                        `;
+                    }
+                } 
+                else { // Age 18+
+                    html += `
+                        <div class="glass-card p-3.5 rounded-2xl space-y-2">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <div class="text-xs font-bold text-white">${player.jobTitle}</div>
+                                    <div class="text-[10px] text-slate-400">Current Career Position</div>
+                                </div>
+                                <span class="text-xs font-black text-emerald-400">$${player.salary.toLocaleString()}/yr</span>
+                            </div>
+                            ${player.jobTitle !== 'Unemployed' ? `
+                                <button onclick="quitJob()" class="w-full bg-red-900/40 border border-red-500/30 text-red-300 font-bold py-1.5 rounded-xl text-xs">Quit Job 🚪</button>
+                            ` : ''}
+                        </div>
+
+                        <div class="glass-card p-3 rounded-2xl space-y-2">
+                            <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Adult Careers Market</div>
+                            <div onclick="applyJob('Junior Developer 💻', 65000, 50)" class="flex justify-between p-2 bg-purple-950/40 border border-purple-800/30 rounded-xl cursor-pointer text-xs">
+                                <span>💻 Junior Dev (Req: 50% Smarts)</span><span class="text-emerald-400 font-bold">$65,000/yr</span>
+                            </div>
+                            <div onclick="applyJob('Accountant 📊', 75000, 60)" class="flex justify-between p-2 bg-purple-950/40 border border-purple-800/30 rounded-xl cursor-pointer text-xs">
+                                <span>📊 Accountant (Req: 60% Smarts)</span><span class="text-emerald-400 font-bold">$75,000/yr</span>
+                            </div>
+                            <div onclick="applyJob('Surgeon 🩺', 210000, 85)" class="flex justify-between p-2 bg-purple-950/40 border border-purple-800/30 rounded-xl cursor-pointer text-xs">
+                                <span>🩺 Surgeon (Req: 85% Smarts)</span><span class="text-emerald-400 font-bold">$210,000/yr</span>
+                            </div>
+                            <div onclick="applyJob('Military Soldier 🪖', 40000, 0, 0)" class="flex justify-between p-2 bg-purple-950/40 border border-purple-800/30 rounded-xl cursor-pointer text-xs">
+                                <span>🪖 Military Officer</span><span class="text-emerald-400 font-bold">$40,000/yr</span>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                html += `</div>`;
+            }
+            else if (player.currentTab === 'activities') {
+                html += `<div class="space-y-3"><h3 class="text-[10px] font-extrabold text-emerald-400 uppercase">Lifestyle & Activities</h3>`;
+
+                if (player.age <= 3) {
+                    html += `
+                        <div class="glass-card p-3 rounded-2xl space-y-2">
+                            <button onclick="doActivity('cry')" class="w-full text-left p-2.5 bg-purple-950/40 border border-purple-800/30 rounded-xl text-xs flex justify-between items-center">
+                                <span>😭 Cry loudly for attention</span><span class="text-emerald-400 font-bold">Free</span>
+                            </button>
+                            <button onclick="doActivity('toy')" class="w-full text-left p-2.5 bg-purple-950/40 border border-purple-800/30 rounded-xl text-xs flex justify-between items-center">
+                                <span>🧸 Play with baby rattle</span><span class="text-emerald-400 font-bold">Free</span>
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    if (player.age >= 12) {
+                        html += `
+                            <button onclick="doActivity('library')" class="w-full flex items-center justify-between p-2.5 glass-card rounded-2xl text-left">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="text-xl">📖</span>
+                                    <div><div class="font-bold text-xs text-white">Read Library Books</div><div class="text-[10px] text-slate-400">Boosts Smarts (Age 12+)</div></div>
+                                </div>
+                                <span class="text-xs font-bold text-emerald-400">Free</span>
+                            </button>
+                            <button onclick="doActivity('gym')" class="w-full flex items-center justify-between p-2.5 glass-card rounded-2xl text-left">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="text-xl">🏋️</span>
+                                    <div><div class="font-bold text-xs text-white">Gym Workout</div><div class="text-[10px] text-slate-400">Boosts Health & Looks (Age 12+)</div></div>
+                                </div>
+                                <span class="text-xs font-bold text-emerald-400">Free</span>
+                            </button>
+                        `;
+                    }
+
+                    if (player.age >= 13 && !player.partner) {
+                        const targetGender = player.gender === 'Male' ? 'Female ♀' : 'Male ♂';
+                        html += `
+                            <button onclick="findHeteroPartner()" class="w-full flex items-center justify-between p-2.5 glass-card rounded-2xl text-left border-emerald-500/30">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="text-xl">💕</span>
+                                    <div><div class="font-bold text-xs text-emerald-300">Date ${targetGender}</div><div class="text-[10px] text-slate-400">Find heterosexual romance (Age 13+)</div></div>
+                                </div>
+                                <span class="text-xs font-bold text-emerald-400">Free</span>
+                            </button>
+                        `;
+                    }
+
+                    if (player.age >= 16 && !player.hasDriverLicense) {
+                        html += `
+                            <button onclick="takeDriverTest()" class="w-full flex items-center justify-between p-2.5 glass-card rounded-2xl text-left">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="text-xl">🚗</span>
+                                    <div><div class="font-bold text-xs text-white">Take Driver's Test</div><div class="text-[10px] text-slate-400">Get driver license (Age 16+)</div></div>
+                                </div>
+                                <span class="text-xs font-bold text-emerald-400">$300</span>
+                            </button>
+                        `;
+                    }
+
+                    if (player.age >= 18) {
+                        html += `
+                            <button onclick="goOnVacation()" class="w-full flex items-center justify-between p-2.5 glass-card rounded-2xl text-left">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="text-xl">✈️</span>
+                                    <div><div class="font-bold text-xs text-white">Go on International Vacation</div><div class="text-[10px] text-slate-400">Relax and boost happiness (Age 18+)</div></div>
+                                </div>
+                                <span class="text-xs font-bold text-emerald-400">$2,500</span>
+                            </button>
+                        `;
+                    }
+                }
+
+                html += `</div>`;
+            }
+            else if (player.currentTab === 'assets') {
+                html += `<div class="space-y-3"><h3 class="text-[10px] font-extrabold text-emerald-400 uppercase">Real Estate & Vehicles</h3>`;
+
+                if (player.age < 18) {
+                    html += `<div class="glass-card p-6 rounded-2xl text-center text-slate-400 text-xs">You must be at least 18 years old to buy property! 🏡</div>`;
+                } else {
+                    html += `
+                        <div class="glass-card p-3 rounded-2xl space-y-2">
+                            <div class="text-xs font-bold text-white mb-1">Buy Properties</div>
+                            <button onclick="buyProperty('Suburban House 🏡', 250000)" class="w-full flex justify-between p-2.5 bg-purple-950/40 border border-purple-800/30 rounded-xl text-xs">
+                                <span>🏡 Suburban House</span><span class="font-bold text-emerald-400">$250,000</span>
+                            </button>
+                            <button onclick="buyProperty('Luxury Villa 🏰', 1200000)" class="w-full flex justify-between p-2.5 bg-purple-950/40 border border-purple-800/30 rounded-xl text-xs">
+                                <span>🏰 Luxury Villa</span><span class="font-bold text-emerald-400">$1,200,000</span>
+                            </button>
+                        </div>
+                    `;
+                }
+
+                html += `</div>`;
+            }
+
+            container.innerHTML = html;
+        }
+
+        function render() {
+            updateHeaderUI();
+            renderContent();
+        }
+
+        function ageUp() {
+            player.age++;
+
+            if (player.salary > 0) {
+                player.wealth += player.salary;
+                logLifeEvent(`Earned annual salary of $${player.salary.toLocaleString()}.`);
+            }
+
+            // Automatic Education Progression
+            if (player.age === 6) {
+                player.education = "Elementary School";
+                logLifeEvent("Started attending Elementary School!");
+            } else if (player.age === 12) {
+                player.education = "Middle School";
+                logLifeEvent("Graduated Elementary and entered Middle School!");
+                unlockAchievement('elem_grad');
+            } else if (player.age === 14) {
+                player.education = "High School";
+                logLifeEvent("Entered High School!");
+            } else if (player.age === 18) {
+                player.education = "High School Graduate";
+                logLifeEvent("Graduated from High School!");
+                unlockAchievement('high_grad');
+            }
+
+            if (player.age === 100) unlockAchievement('centenarian');
+            if (player.wealth >= 1000000) unlockAchievement('millionaire');
+
+            if (player.age >= 80 && Math.random() < 0.25) {
+                triggerDeath();
+                return;
+            }
+
+            logLifeEvent(`Turned ${player.age} years old.`);
+            triggerAgeEvents();
+            render();
+        }
+
+        function triggerAgeEvents() {
+            if (player.age === 1) {
+                showEventModal("First Baby Words", "You uttered your very first word in front of your mother!", "👶", [
+                    { text: "Say 'Mama'", action: () => { unlockAchievement('first_words'); logLifeEvent("You spoke your first word: 'Mama'."); } },
+                    { text: "Babble nonsense", action: () => { logLifeEvent("You babbled nonsense happily."); } }
+                ]);
+            }
+        }
+
+        function showEventModal(title, desc, icon, choices) {
+            document.getElementById('event-title').innerText = title;
+            document.getElementById('event-desc').innerText = desc;
+            document.getElementById('event-icon-box').innerText = icon;
+
+            const box = document.getElementById('event-choices');
+            box.innerHTML = '';
+            choices.forEach(c => {
+                const btn = document.createElement('button');
+                btn.className = "w-full bg-purple-950/80 border border-purple-700/50 hover:border-emerald-500 font-bold py-2 px-3 rounded-xl text-xs text-white text-left transition";
+                btn.innerText = c.text;
+                btn.onclick = () => {
+                    c.action();
+                    document.getElementById('event-modal').classList.add('hidden');
+                    render();
+                };
+                box.appendChild(btn);
+            });
+
+            document.getElementById('event-modal').classList.remove('hidden');
+        }
+
+        function interactFamily(idx, action) {
+            const p = player.parents[idx];
+            if (action === 'time') {
+                p.relationship = Math.min(100, p.relationship + 8);
+                player.happiness = Math.min(100, player.happiness + 5);
+                logLifeEvent(`Spent quality time with your ${p.role.toLowerCase()}.`);
+            } else if (action === 'compliment') {
+                p.relationship = Math.min(100, p.relationship + 6);
+                logLifeEvent(`Complimented your ${p.role.toLowerCase()}.`);
+            } else if (action === 'money') {
+                if (p.generosity > 40) {
+                    const amount = Math.floor(Math.random() * 50) + 20;
+                    player.wealth += amount;
+                    logLifeEvent(`Your ${p.role.toLowerCase()} gave you $${amount}!`);
+                } else {
+                    logLifeEvent(`Your ${p.role.toLowerCase()} refused to give you money.`);
+                }
+            } else if (action === 'insult') {
+                p.relationship = Math.max(0, p.relationship - 20);
+                logLifeEvent(`Insulted your ${p.role.toLowerCase()}!`);
+            }
+            render();
+        }
+
+        function studyHarder() {
+            player.smarts = Math.min(100, player.smarts + 6);
+            logLifeEvent("Studied hard for school exams. (+6% Smarts)");
+            render();
+        }
+
+        function interactClassmates() {
+            logLifeEvent("Hanged out with classmates at recess.");
+            player.happiness = Math.min(100, player.happiness + 5);
+            render();
+        }
+
+        function applyJob(title, sal, reqSmarts = 0) {
+            if (player.smarts >= reqSmarts) {
+                player.jobTitle = title;
+                player.salary = sal;
+                unlockAchievement('first_job');
+                logLifeEvent(`Hired as ${title} earning $${sal.toLocaleString()}/yr!`);
+            } else {
+                logLifeEvent(`Failed interview for ${title}. Smarts requirement not met.`);
+            }
+            render();
+        }
+
+        function quitJob() {
+            player.jobTitle = "Unemployed";
+            player.salary = 0;
+            logLifeEvent("Resigned from your current position.");
+            render();
+        }
+
+        function doActivity(act) {
+            if (act === 'cry') {
+                logLifeEvent("Cried loudly until your mother held you.");
+            } else if (act === 'toy') {
+                player.happiness = Math.min(100, player.happiness + 5);
+                logLifeEvent("Played with baby rattle toy.");
+            } else if (act === 'library') {
+                player.smarts = Math.min(100, player.smarts + 5);
+                logLifeEvent("Read books at the public library.");
+            } else if (act === 'gym') {
+                player.health = Math.min(100, player.health + 5);
+                player.looks = Math.min(100, player.looks + 4);
+                logLifeEvent("Worked out at the local fitness gym.");
+            }
+            render();
+        }
+
+        function findHeteroPartner() {
+            // Strictly Heterosexual Pairing
+            const partnerGender = player.gender === 'Male' ? 'Female' : 'Male';
+            const name = partnerGender === 'Female' ? 'Emma Watson' : 'James Parker';
+            
+            player.partner = { name, gender: partnerGender, relationship: 80 };
+            unlockAchievement('first_kiss');
+            logLifeEvent(`Began dating ${name} (${partnerGender})! ❤️`);
+            render();
+        }
+
+        function datePartner() {
+            if (!player.partner) return;
+            player.partner.relationship = Math.min(100, player.partner.relationship + 10);
+            player.happiness = Math.min(100, player.happiness + 8);
+            logLifeEvent(`Went on a romantic date with ${player.partner.name}.`);
+            render();
+        }
+
+        function takeDriverTest() {
+            if (player.wealth < 300) return;
+            player.wealth -= 300;
+            player.hasDriverLicense = true;
+            unlockAchievement('driver_lic');
+            logLifeEvent("Passed driving exam and earned driver's license! 🚗");
+            render();
+        }
+
+        function goOnVacation() {
+            if (player.wealth < 2500) return;
+            player.wealth -= 2500;
+            player.happiness = Math.min(100, player.happiness + 20);
+            unlockAchievement('vacationer');
+            logLifeEvent("Traveled abroad on a luxury vacation to Europe! ✈️");
+            render();
+        }
+
+        function buyProperty(name, cost) {
+            if (player.wealth < cost) return;
+            player.wealth -= cost;
+            player.assets.push(name);
+            logLifeEvent(`Purchased ${name} for $${cost.toLocaleString()}!`);
+            render();
+        }
+
+        function triggerDeath() {
+            document.getElementById('death-name').innerText = `${player.firstName} ${player.lastName}`;
+            document.getElementById('death-span').innerText = `Age 0 - Age ${player.age}`;
+            document.getElementById('death-modal').classList.remove('hidden');
+        }
+
+        window.onload = function() {
+            render();
+        }
+    </script>
+</body>
+</html>
